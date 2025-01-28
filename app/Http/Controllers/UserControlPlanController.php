@@ -8,6 +8,10 @@ use App\Models\UserControlPlan;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\UserControlPlanRequest;
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Exchange\AMQPExchangeType;
+use PhpAmqpLib\Message\AMQPMessage;
+use function env;
 
 class UserControlPlanController extends Controller
 {
@@ -67,15 +71,37 @@ class UserControlPlanController extends Controller
         //
     }
 
-    public function alter(Request $request) 
+    public function alter(Request $request)
     {
        $userControlPlan = new UserControlPlan();
-       $userControlPlan->name = $request->name; 
-       $userControlPlan->email = $request->email; 
-       $userControlPlan->cpfCnpj = $request->cpfCnpj; 
-       $userControlPlan->plan_actual = $request->plan_actual; 
+       $userControlPlan->name = $request->name;
+       $userControlPlan->email = $request->email;
+       $userControlPlan->cpfCnpj = $request->cpfCnpj;
+       $userControlPlan->plan_actual = $request->plan_actual;
        $userControlPlan->new_plan = $request->new_plan;
-       
-       Mail::to('franciscoanto@gmail.com')->send(new Finance($userControlPlan));
+
+        $exchange = '360_alter_plan';
+        $queue = env('RABBITMQ_QUEUE_FINANCE');
+        $connection = new AMQPStreamConnection(
+            env('RABBITMQ_DEFAULT_HOST'),
+            env('RABBITMQ_DEFAULT_PORT'),
+            env('RABBITMQ_DEFAULT_USER'),
+            env('RABBITMQ_DEFAULT_PASS'),
+            '/'
+        );
+
+        $channel = $connection->channel();
+        $channel->queue_declare($queue, false, true, false, false);
+
+        $channel->exchange_declare($exchange, AMQPExchangeType::DIRECT, false, true, false);
+        $channel->queue_bind($queue, $exchange);
+
+
+        $messageBody = json_encode($userControlPlan);
+        $message = new AMQPMessage($messageBody, array('content_type' => 'text/plain', 'delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT));
+        $channel->basic_publish($message, $exchange, null);
+
+        $channel->close();
+        $connection->close();
     }
 }
