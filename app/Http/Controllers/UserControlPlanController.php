@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\Finance;
 use Illuminate\Http\Request;
 use App\Models\UserControlPlan;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\UserControlPlanRequest;
@@ -12,6 +13,7 @@ use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Exchange\AMQPExchangeType;
 use PhpAmqpLib\Message\AMQPMessage;
 use function env;
+use function json_encode;
 
 class UserControlPlanController extends Controller
 {
@@ -91,10 +93,11 @@ class UserControlPlanController extends Controller
         );
 
         $channel = $connection->channel();
-        $channel->queue_declare($queue, false, true, false, false);
-
+        // Declarando a Exchange
         $channel->exchange_declare($exchange, AMQPExchangeType::DIRECT, false, true, false);
-        $channel->queue_bind($queue, $exchange);
+
+        $channel->queue_declare($queue, false, true, false, false);
+//        $channel->queue_bind($queue, $exchange);
 
 
         $messageBody = json_encode($userControlPlan);
@@ -103,5 +106,6 @@ class UserControlPlanController extends Controller
 
         $channel->close();
         $connection->close();
+
     }
 }
