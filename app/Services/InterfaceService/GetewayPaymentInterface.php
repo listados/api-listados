@@ -4,5 +4,5 @@ namespace App\Services\InterfaceService;
 
 interface GetewayPaymentInterface
 {
-    public function getEmail();
+    public function getUserGeteway();
 }
