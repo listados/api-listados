@@ -1,1 +1,9 @@
 # Repositório da api
+
+Comandos para os works
+app:send-email-finance
+app:send-email-user-control-plan
+
+migration
+docker exec app_api php artisan migrate
+Alterar permissões das pastas
