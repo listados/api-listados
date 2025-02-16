@@ -4,8 +4,7 @@ namespace App\Services;
 
 use App\Services\InterfaceService\GetewayPaymentInterface;
 use GuzzleHttp\Client;
-use function dd;
-use function json_decode;
+
 
 class GetewayPayment implements GetewayPaymentInterface
 {
@@ -16,12 +15,14 @@ class GetewayPayment implements GetewayPaymentInterface
         private string $email,
         private float  $value,
         private string $dateLimit,
-        private string $type
+        private string $type,
+
     ) {}
 
 
     public function getUserGeteway()
     {
+
         // Conexão com api
         $client = new Client([
             'base_uri' => env('GETEWAY_PAYMENT_API_URL'),

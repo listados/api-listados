@@ -15,70 +15,20 @@ use App\Http\Requests\UserControlPlanRequest;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Exchange\AMQPExchangeType;
 use PhpAmqpLib\Message\AMQPMessage;
+use function dd;
 use function dump;
 use function env;
 use Carbon\Carbon;
+use function floatval;
+use function gettype;
+use function json_encode;
 
 class UserControlPlanController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(UserControlPlan $userControlPlan)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(UserControlPlan $userControlPlan)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, UserControlPlan $userControlPlan)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(UserControlPlan $userControlPlan)
-    {
-        //
-    }
-
+   
     public function alter(Request $request)
     {
+
         $userControlPlan = new UserControlPlan();
         $userControlPlan->name = $request->name;
         $userControlPlan->email = $request->email;
@@ -108,23 +58,19 @@ class UserControlPlanController extends Controller
         $message = new AMQPMessage($messageBody, array('content_type' => 'text/plain', 'delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT));
         $channel->basic_publish($message, $exchange, null);
 
-        $channel->close();
-        $connection->close();
-
         $getPay = new GetewayPayment(
             $request->email,
-            $request->value_new_plan,
+            floatval($request->value_new_plan),
             Carbon::now()->addDays(3),
             "BOLETO"
         );
         $getBilling = $getPay->getUserGeteway();
 
-        try {
-            Mail::to($request->email)->send(new ChargeUserRenovationMail($getBilling));
-            return response()->json(['message' => 'success'], 200);
-        }catch (\Exception $e){
-            return response()->json(['message' => $e->getMessage()], 500);
-        }
+
+        Mail::to($request->email)->send(new ChargeUserRenovationMail($getBilling));
+        $channel->close();
+        $connection->close();
+        return response()->json(['message' => 'success'], 200);
 
     }
 }
