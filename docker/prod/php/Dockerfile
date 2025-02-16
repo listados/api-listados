@@ -17,14 +17,14 @@ RUN apt-get update && apt-get install -y \
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Copiando arquivos da aplicação (exceto os que estão no .dockerignore)
-COPY . .
+COPY .. .
 
 # Ajustando permissões
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Configurando o PHP-FPM
-COPY ./docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
+COPY php.ini /usr/local/etc/php/conf.d/custom.ini
 
 # Expondo a porta do PHP-FPM
 EXPOSE 9000
