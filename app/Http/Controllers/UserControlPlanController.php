@@ -25,7 +25,7 @@ use function json_encode;
 
 class UserControlPlanController extends Controller
 {
-   
+
     public function alter(Request $request)
     {
 

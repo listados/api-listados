@@ -11,17 +11,19 @@ RUN apt-get update && apt-get install -y \
     libpng-dev libjpeg-dev libfreetype6-dev \
     libonig-dev libzip-dev libxml2-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd mbstring zip xml pdo pdo_mysql bcmath opcache
+    && docker-php-ext-install gd mbstring zip xml pdo pdo_mysql bcmath opcache sockets
 
 # Instalando o Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # Copiando arquivos da aplicação (exceto os que estão no .dockerignore)
+RUN mkdir /var/www/html/storage
+
 COPY .. .
 
 # Ajustando permissões
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+    && chmod -R 775 /var/www/html/storage
 
 # Configurando o PHP-FPM
 COPY php.ini /usr/local/etc/php/conf.d/custom.ini
