@@ -41,7 +41,7 @@ services:
             MYSQL_PASSWORD: '${DB_PASSWORD}'
             MYSQL_ALLOW_EMPTY_PASSWORD: 1
         volumes:
-            - 'sail-mysql:/var/lib/mysql'
+            - '/home/volumes/api-listados/mysql:/var/lib/mysql'
             - './vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
         networks:
             - sail
@@ -53,7 +53,7 @@ services:
                 - ping
                 - '-p${DB_PASSWORD}'
             retries: 3
-            timeout: 5s
+            timeout: 5s 
     redis:
         image: 'redis:alpine'
         ports:
@@ -107,6 +107,17 @@ services:
         networks:
             - sail
             - lab
+    rabbitmq:
+        image: rabbitmq:3-management
+        ports:
+            - "5672:5672"  
+            - "15672:15672" 
+        networks:
+            - sail
+            - lab
+        environment:
+            RABBITMQ_DEFAULT_USER: user
+            RABBITMQ_DEFAULT_PASS: password
 networks:
     sail:
         driver: bridge
